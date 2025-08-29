@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import { WebSocketServer } from 'ws';
-
+import { createServer } from 'http'
 console.log("啟動 Express API & WebSocket Server...");
 
 const app = express();
@@ -56,11 +56,12 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.listen(3000, () => console.log("Auth API 在 http://localhost:3000"));
+// --------- 建立共用 HTTP Server ---------
+const PORT = process.env.PORT || 3000;
+const server = createServer(app);
 
-// --------- WebSocket Server ---------
-const wss = new WebSocketServer({ port: 8082 });
-console.log("WebSocket 伺服器在 ws://localhost:8082");
+// --------- WebSocket Server 共用 HTTP Server ---------
+const wss = new WebSocketServer({ server });
 
 wss.on('connection', (ws) => {
     ws.role = null;
@@ -128,3 +129,5 @@ wss.on('connection', (ws) => {
         }
     });
 });
+// --------- 啟動服務 ---------
+server.listen(PORT, () => console.log(`伺服器啟動在 port ${PORT}`));
